@@ -1,4 +1,5 @@
 <?php
+
 class User {
 
     private $id;
@@ -16,9 +17,9 @@ class User {
 
     //Funkcja, która dodaje rekord do bazy danych na podstawie wartości w zmiennych prywatnych
     public function save() {
-        $connection = new mysqli("localhost", "root", "", "twitter");
+        $connection = new mysqli("localhost", "root", "coderslab", "twitter");
         if ($this->id == -1) {
-            $sql = 'INSERT INTO users (`email`,`username`,`hashed_password`) VALUES (?,?,?)';
+            $sql = 'INSERT INTO Users (`email`,`username`,`hashed_password`) VALUES (?,?,?)';
             $stmt = $connection->prepare($sql);
             $stmt->bind_param('sss', $this->email, $this->username, $this->hashed_password);
             if ($stmt->execute() == false) {
@@ -26,7 +27,7 @@ class User {
             }
         } else {
             //Edycja danych użytkownika
-            $sql = "UPDATE users SET `email`=?, `username`=?, `hashed_password`=? WHERE id=?";
+            $sql = "UPDATE Users SET `email`=?, `username`=?, `hashed_password`=? WHERE id=?";
             $stmt = $connection->prepare($sql);
             $stmt->bind_param('sssi', $this->email, $this->username, $this->hashed_password, $this->id);
             if ($stmt->execute() == false) {
@@ -36,10 +37,11 @@ class User {
         $connection->close();
         $connection = null;
     }
+
     //Funkcja, która usunie użytkownika na podstawie jego id
-    public static function deleteById($id){
-        $connection = new mysqli("localhost", "root", "", "twitter");
-        $sql = 'DELETE FROM users WHERE id=?';
+    public static function deleteById($id) {
+        $connection = new mysqli("localhost", "root", "coderslab", "twitter");
+        $sql = 'DELETE FROM Users WHERE id=?';
         $stmt = $connection->prepare($sql);
         $stmt->bind_param('i', $id);
         if (!$stmt->execute()) {
@@ -52,8 +54,8 @@ class User {
     //Funkcja, która pobiera informacje o użytkowniku z bazy danych na podstawie id
     public static function getById($id) {
         $user = null;
-        $connection = new mysqli("localhost", "root", "", "twitter");
-        $sql = 'SELECT * FROM users WHERE id=?';
+        $connection = new mysqli("localhost", "root", "coderslab", "twitter");
+        $sql = 'SELECT * FROM Users WHERE id=?';
         $stmt = $connection->prepare($sql);
         $stmt->bind_param('i', $id);
         if ($stmt->execute()) {
@@ -71,12 +73,12 @@ class User {
         $connection = null;
         return $user;
     }
-    
+
     //Funkcja, która pobiera informacje o użytkowniku z bazy danych na podstawie maila
     public static function getByEmail($email) {
         $user = null;
-        $connection = new mysqli("localhost", "root", "", "twitter");
-        $sql = 'SELECT * FROM users WHERE email=?';
+        $connection = new mysqli("localhost", "root", "coderslab", "twitter");
+        $sql = 'SELECT * FROM Users WHERE email=?';
         $stmt = $connection->prepare($sql);
         $stmt->bind_param('s', $email);
         if ($stmt->execute()) {
@@ -93,6 +95,31 @@ class User {
         $connection->close();
         $connection = null;
         return $user;
+    }
+
+    public static function loadAllUsers() {
+        $user = null;
+        $connection = new mysqli("localhost", "root", "coderslab", "twitter");
+
+        $sql = 'SELECT * FROM Users';
+        $result = $connection->query($sql);
+
+        if ($result == true && $result->num_rows != 0) {
+            foreach ($result as $row) {
+                $user = new User("", "","","");
+               
+                $user->id = $row['id'];
+                $user->username = $row['username'];
+                $user->hashed_password = $row['hashed_password'];
+                $user->email = $row['email'];
+                $user->password = 'forbidden';
+
+                $ret[] = $user;
+            }
+            $connection->close();
+            $connection = null;
+            return $ret;
+        }
     }
 
     //Funkcja nastawia id użytkownika
